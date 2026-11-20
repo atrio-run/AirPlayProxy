@@ -1,0 +1,61 @@
+name: Firmware
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  crates:
+    name: Test the crates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Test and lint each crate
+        run: |
+          for crate in crates/*; do
+            (cd "$crate" && cargo clippy --release --all-targets -- --deny warnings && cargo test --release)
+          done
+
+  firmware:
+    name: Build the firmware
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the Rust toolchain for Espressif chips
+        uses: esp-rs/xtensa-toolchain@v1.6
+        with:
+          default: true
+          buildtargets: esp32
+          ldproxy: true
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: proxy
+      - name: Build
+        working-directory: proxy
+        run: cargo build --release
+      - name: Install espflash
+        run: cargo install espflash --version 4.3.0 --locked
+      - name: Make one image for the whole flash
+        working-directory: proxy
+        run: >
+          espflash save-image --chip esp32 --merge
+          --bootloader target/xtensa-esp32-espidf/release/bootloader.bin
+          --partition-table partitions.csv
+          --target-app-partition firmware
+          target/xtensa-esp32-espidf/release/proxy
+          airplay-proxy.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: airplay-proxy
+          path: proxy/airplay-proxy.bin
+      - name: Attach the image to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: proxy/airplay-proxy.bin
+    permissions:
+      contents: write

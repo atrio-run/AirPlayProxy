@@ -1,0 +1,7 @@
+[package]
+name = "raop"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Sender side of RAOP, the audio streaming protocol of AirPlay 1"
+license = "MIT"

@@ -1,0 +1,41 @@
+# Rust needs more main task stack than C (the default is 3.5K)
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=12288
+
+# An audio packet leaves every 8 ms. With the default tick of 10 ms, a wait that short keeps the
+# processor busy instead of yielding it.
+CONFIG_FREERTOS_HZ=1000
+
+# The tone control filters every sample, which at 160 MHz took a third of a processor
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+
+# Every ESP32-WROVER-E module has at least 4 MB of flash
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+
+# ESP32-WROVER-E: a chip of revision 3, which needs no workaround for external RAM
+CONFIG_ESP32_REV_MIN_3=y
+
+# External RAM takes the allocations above 16 KB, the Wi-Fi and network buffers and the Bluetooth
+# host. Smaller allocations stay in internal RAM, where the atomics of Rust work.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+CONFIG_BT_ALLOCATION_FROM_SPIRAM_FIRST=y
+
+# Internal RAM is short once Wi-Fi and Bluetooth run: the threads that only talk to the network
+# have their stacks in external RAM. Such a thread must not write to flash, which a stack in
+# external RAM does not survive.
+CONFIG_FREERTOS_TASK_CREATE_ALLOW_EXT_MEM=y
+
+# Bluetooth Classic only, with the A2DP sink profile
+CONFIG_BT_ENABLED=y
+CONFIG_BT_BLUEDROID_ENABLED=y
+CONFIG_BT_CLASSIC_ENABLED=y
+CONFIG_BT_A2DP_ENABLE=y
+CONFIG_BTDM_CTRL_MODE_BLE_ONLY=n
+CONFIG_BTDM_CTRL_MODE_BR_EDR_ONLY=y
+CONFIG_BTDM_CTRL_MODE_BTDM=n
+
+# esp-idf-svc formats every Bluetooth event for the log on the Bluetooth callback task. This is
+# the stack size its Bluetooth Classic example runs with.
+CONFIG_BT_BTC_TASK_STACK_SIZE=15000

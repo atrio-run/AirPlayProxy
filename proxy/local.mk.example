@@ -1,0 +1,9 @@
+# Everything here is optional: what the page of the proxy sets takes its place.
+
+# The Wi-Fi network the proxy joins until another is chosen. Leave the password empty for an open
+# network.
+PROXY_WIFI_SSID = My network
+PROXY_WIFI_PASSWORD = secret
+# Host and port of the AirPlay receiver the proxy plays on until one is chosen on its page, as
+# `dns-sd -L <name> _raop._tcp` shows them.
+PROXY_RECEIVER = Kitchen.local:7000

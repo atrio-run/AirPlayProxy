@@ -1,0 +1,34 @@
+[package]
+name = "proxy"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Bluetooth speaker that plays on an AirPlay receiver"
+license = "MIT"
+
+[[bin]]
+name = "proxy"
+harness = false
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+# The filters of the tone control run on every sample: speed counts for more than size there.
+[profile.release.package.tone]
+opt-level = 3
+
+[dependencies]
+captive-dns = { path = "../crates/captive-dns" }
+delay-line = { path = "../crates/delay-line" }
+esp-idf-svc = "=0.52.1"
+httpd = { path = "../crates/httpd" }
+log = "0.4"
+mdns = { path = "../crates/mdns" }
+raop = { path = "../crates/raop" }
+tone = { path = "../crates/tone" }
+
+[build-dependencies]
+embuild = "0.33.5"

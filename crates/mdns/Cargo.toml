@@ -1,0 +1,11 @@
+[package]
+name = "mdns"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+description = "Multicast DNS for a small device: finds hosts and services by name, and answers for its own"
+license = "MIT"
+
+[dependencies]
+libc = "0.2"
+log = "0.4"

@@ -1,0 +1,7 @@
+.DS_Store
+/crates/*/target/
+/crates/*/Cargo.lock
+/proxy/target/
+/proxy/.embuild/
+/proxy/local.mk
+/proxy/airplay-proxy.bin
