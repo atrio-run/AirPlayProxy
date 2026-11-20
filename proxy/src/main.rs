@@ -235,7 +235,9 @@ fn on_event(
             } else {
                 converted.clear();
                 converted.extend(
-                    pcm.chunks_exact(2)
+                    pcm.as_chunks::<2>()
+                        .0
+                        .iter()
                         .flat_map(|sample| [sample[0], sample[1], sample[0], sample[1]]),
                 );
                 converted.as_slice()

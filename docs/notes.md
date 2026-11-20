@@ -147,10 +147,3 @@ On 20 November 2026, with the processor at 160 MHz, the ten bands took 3.5 s of 
 Internal memory is short once Wi-Fi and Bluetooth run; the board has 4 MB of external RAM mapped. External RAM takes the allocations above 16 KB, the Wi-Fi and network buffers, the Bluetooth host, and the stacks of the threads that only talk to the network: the two that an AirPlay session starts and the one that answers for the `.local` name. A thread that writes to flash keeps its stack in internal memory, because external RAM is out of reach while flash is written: the page, which saves the settings, is served on the main thread.
 
 On 20 November 2026, with the page and the name each on a thread of its own with a stack in internal memory (16 KB and 6 KB), the two threads of a session could not be created, and every session failed with `Not enough space`. The log tells the free internal memory, and its largest piece, when a session opens and when one fails. The arrangement above was not tried on the board yet.
-
-## Limits
-
-- Streams at 44.1 kHz only, the sample rate of AirPlay 1.
-- Wi-Fi on 2.4 GHz only, which is all an ESP32 has.
-- The page is open to whoever is on the network, and the access point to whoever is near.
-- WPA2 networks with a password, or open ones.

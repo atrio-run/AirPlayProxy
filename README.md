@@ -1,124 +1,113 @@
 # AirPlay Proxy
 
-A Bluetooth speaker that plays on an AirPlay speaker, on an ESP32 board that costs a few euros.
+**Play any Bluetooth source on your AirPlay speakers, with an ESP32 that costs a few euros.**
 
-Anything that sends audio over Bluetooth, such as a projector, a TV or a turntable, sees a speaker called `AirPlay Proxy`. What it plays comes out of an AirPlay receiver on the Wi-Fi network: a HomePod, for one. The proxy tells the source how late the sound is, so that a source which honors that keeps its video in step with it.
+Your projector, TV or turntable only speaks Bluetooth. Your HomePod only speaks AirPlay. AirPlay Proxy sits between them: the source sees an ordinary Bluetooth speaker, and the sound comes out of the HomePod, in sync with the picture.
 
-<img src="docs/settings-page.jpg" alt="The settings page of the proxy" width="360">
+No app, no account, no cloud. Flash the board, pick your Wi-Fi and your speaker from a web page, pair, play.
 
-The settings page, with made-up names.
+<img src="docs/settings-page.jpg" alt="The settings page" width="360">
 
-## What it does
+## Features
 
-- **Bluetooth in, AirPlay out.** An A2DP sink (SBC, 44.1 kHz) on one side, an AirPlay 1 (RAOP) sender on the other. The audio crosses uncompressed.
-- **Lip sync.** It reports its delay to the source (A2DP delay reporting). A source that honors the report holds its video back by as much. The page trims it in steps of 5 ms.
-- **Volume.** It presents itself as a speaker with absolute volume (AVRCP): the volume keys of the source set the volume of the receiver.
-- **A page instead of a display.** At `http://airplay-proxy.local` you name the proxy, choose its Wi-Fi network and the receiver it plays on, and shape the sound. Choosing another receiver moves the sound to it at once.
-- **Setup without a cable.** With no network, or one it cannot join, it opens its own Wi-Fi network, and a phone that joins it lands on the page.
-- **Equalizer and loudness.** Ten bands that only take away, so that nothing ever clips and every band at the top is the untouched sound; and the loudness button of a 1980s amplifier, bass and treble.
-- **Roaming.** With several access points on one network it moves to a stronger one while nothing plays.
+- **Bluetooth to AirPlay**, with uncompressed audio all the way.
+- **Lip sync.** The proxy tells the source exactly how late the sound is, and the source delays the picture to match. Films and series stay in sync; you can fine-tune it in 5 ms steps.
+- **Volume from the source.** The volume buttons of your projector or TV control the HomePod.
+- **Setup from your phone.** On first start the board opens its own Wi-Fi network; join it and the setup page opens by itself. No serial cable, no config files.
+- **A web page for everything**, at `http://airplay-proxy.local`: name, Wi-Fi network, AirPlay speaker, sound. Switch speaker while music plays and the sound follows.
+- **10-band equalizer.** It only cuts, so it never distorts and never eats your volume: all sliders at the top is the original sound.
+- **Loudness**, like the button on a 1980s hi-fi amplifier: more bass and more treble.
+- **Wi-Fi roaming.** With several access points it moves to the strongest one on its own.
+- **Remembers everything** across restarts and reconnects by itself if the network drops.
 
-## What it was tried with
+## Tested with
 
 | | |
 |---|---|
-| Source | Magcubic HY320Pro projector (Android 14), which honors delay reports |
-| Receiver | HomePod mini, software 18.6 |
-| Board | ESP32-WROVER-E, 16 MB of flash, 8 MB of PSRAM |
+| Source | Magcubic HY320Pro projector (Android 14) |
+| Speaker | HomePod mini |
+| Board | ESP32-WROVER-E, 16 MB flash, 8 MB PSRAM |
 
-A receiver has to accept an AirPlay 1 session without pairing, password or encryption, as a HomePod mini does. Others were found on the network and never played on.
+It works with AirPlay speakers that accept a classic AirPlay stream without pairing, as the HomePod mini does.
 
-A source that ignores delay reports plays its video about 0.8 s ahead of the sound: fine for music, not for films.
+Lip sync relies on the source honoring Bluetooth delay reports, as Android does. With a source that ignores them the picture runs about 0.8 s ahead of the sound: fine for music, not for films.
 
 ## Hardware
 
-It needs an **original ESP32 with PSRAM** and 4 MB of flash or more: the module is called **ESP32-WROVER-E**, or ESP32-WROVER-IE with a connector for an external antenna.
+You need an **ESP32-WROVER-E** board: an original ESP32 with PSRAM and at least 4 MB of flash. That is all.
 
-- The original ESP32 is the one with Bluetooth Classic, which carries audio. An ESP32-S2, S3, C3, C6 or H2 has none and cannot do this.
-- An ESP32-WROOM has no PSRAM, and the firmware does not start without it.
+Boards that carry it:
 
-Boards with that module, of which only the first kind was tried:
+- Waveshare ESP32 development boards with the WROVER-E module (the one used here)
+- Espressif ESP32-DevKitC-VE
+- Espressif ESP32-DevKitC-VIE, with a connector for an external antenna
+- LILYGO T7 V1.5
+- Freenove ESP32-WROVER
 
-- a development board with an ESP32-WROVER-E, such as those of Waveshare;
-- Espressif ESP32-DevKitC-VE, or ESP32-DevKitC-VIE for an external antenna;
-- LILYGO T7 V1.5;
-- Freenove ESP32-WROVER.
+What does **not** work:
 
-One radio and one printed antenna serve Bluetooth and Wi-Fi in turns, and the audio is 1.4 Mbit/s. Keep the board a few metres from an access point and leave the end of the module with the antenna free: a hand closed around it stops the sound. In a case, PETG stands the warmth better than PLA, and neither stops the radio. Where the signal is weak, take the module with the external antenna.
+- ESP32-S2, S3, C3, C6, H2: they have no Bluetooth Classic, which is what carries audio.
+- ESP32-WROOM modules: they have no PSRAM.
 
-## Installing
+A tip on placement: Bluetooth and Wi-Fi share one small antenna on the module. Keep that end of the board clear of metal and of your hand, and reasonably close to an access point. For a case, use PETG rather than PLA: the board runs warm. If your Wi-Fi is weak where the board lives, get the version with the external antenna.
 
-### A firmware that is already built
+## Install
 
-Every push builds the firmware (see [the workflow](.github/workflows/firmware.yml)) and keeps `airplay-proxy.bin`, one image for the whole flash. With [espflash](https://github.com/esp-rs/espflash):
+### Ready-made firmware
+
+Download `airplay-proxy.bin` from the [releases](../../releases) and write it with [espflash](https://github.com/esp-rs/espflash):
 
 ```bash
 espflash write-bin 0x0 airplay-proxy.bin
 ```
 
-### Building it
+### Build from source
 
-With the Rust toolchain for Espressif chips ([espup](https://github.com/esp-rs/espup)), `ldproxy` and `espflash`:
+Install the Rust toolchain for Espressif chips with [espup](https://github.com/esp-rs/espup), plus `ldproxy` and `espflash`. Then:
 
 ```bash
 source ~/export-esp.sh
 make -C proxy flash
 ```
 
-The first build downloads ESP-IDF v5.4.1 and its toolchain into `proxy/.embuild`, a few gigabytes. `make -C proxy build` only builds.
+The first build downloads ESP-IDF v5.4.1 into `proxy/.embuild`; later builds take seconds.
 
-A Wi-Fi network and a receiver can be built in, to hold until others are chosen on the page: copy `proxy/local.mk.example` to `proxy/local.mk`, which git ignores, and fill it in.
+## Getting started
 
-## First start
-
-1. Power the board. After half a minute without a network it opens the Wi-Fi network `AirPlay Proxy` followed by four characters, without a password.
-2. Join it with a phone. The page opens by itself; if it does not, go to `http://192.168.71.1`.
-3. Pick your network from the list, type its password and save. The proxy restarts and joins it.
-4. Open `http://airplay-proxy.local` and choose the receiver under *Plays on*.
-5. On the source, pair the Bluetooth speaker `AirPlay Proxy` and play.
-
-A computer that does not find `.local` names reaches the page by the address that the page itself and the serial log show.
+1. Power the board. It opens a Wi-Fi network called `AirPlay Proxy` followed by four characters.
+2. Join it from your phone. The setup page opens by itself (if it does not, browse to `http://192.168.71.1`).
+3. Tap **Scan**, pick your network, type the password, **Save**. The board restarts and joins your Wi-Fi.
+4. Open `http://airplay-proxy.local` and choose your speaker under **Plays on**.
+5. On your projector or TV, pair the Bluetooth speaker **AirPlay Proxy**. Play something.
 
 ## How it works
 
 ```
-source ──Bluetooth A2DP──▶ delay line ──▶ equalizer, loudness ──▶ AirPlay 1 ──Wi-Fi──▶ receiver
-        ◀──delay report──                                        ──volume──▶
-        ──volume (AVRCP)──▶
+source ──Bluetooth──▶ buffer ──▶ equalizer + loudness ──▶ AirPlay ──Wi-Fi──▶ speaker
 ```
 
-- The delay line holds 200 ms of audio, to cover the bursts in which Bluetooth delivers it, and follows the clock of the source by dropping or repeating a single frame now and then.
-- The receiver is asked to play a quarter of a second after each packet is sent, which leaves time for a packet that is late or has to be sent again.
-- The proxy reports 792 ms to the source: what Bluetooth, the delay line and AirPlay take together.
+The board receives the Bluetooth audio, holds a fifth of a second of it to smooth out the bursts in which Bluetooth delivers, shapes the sound, and streams it over AirPlay with timestamps that tell the speaker when to play each packet. Since the path takes about 0.8 s in all, the proxy reports that delay to the source, which holds the picture back by the same amount.
 
-[The engineering notes](docs/notes.md) give the reasons and the measurements behind each of these, and [the history](HISTORY.md) tells how it got there.
+The source and the board run on different clocks, so the buffer slowly fills or empties; the proxy corrects for it one sample at a time, inaudibly.
 
-## The code
+Everything is written in Rust on ESP-IDF, and the AirPlay sender, the mDNS discovery, the web server and the audio processing are small crates of their own with tests that run on a computer.
+
+More detail, with the measurements behind each design choice, is in the [engineering notes](docs/notes.md). The [history](HISTORY.md) tells how the project got here in three days.
+
+## Project layout
 
 | | |
 |---|---|
-| `proxy/` | the firmware: Bluetooth, Wi-Fi and roaming, settings, the page |
-| `crates/raop` | the AirPlay 1 sender |
-| `crates/delay-line` | the delay line that follows the clock of the source |
-| `crates/tone` | the equalizer and the loudness correction |
-| `crates/mdns` | finding hosts and services by name, and answering for the proxy's own |
-| `crates/httpd` | the web server of the page |
-| `crates/captive-dns` | the DNS server that leads a phone to the page |
+| `proxy/` | the firmware: Bluetooth, Wi-Fi, roaming, settings, web page |
+| `crates/raop` | AirPlay sender |
+| `crates/delay-line` | audio buffer that follows the clock of the source |
+| `crates/tone` | equalizer and loudness |
+| `crates/mdns` | discovery of speakers, and the `.local` name of the proxy |
+| `crates/httpd` | web server |
+| `crates/captive-dns` | makes the setup page open by itself on a phone |
 
-The crates are plain Rust and have their tests, which run on a computer:
-
-```bash
-cd crates/raop && cargo test
-```
-
-## Limits
-
-- Sources at 44.1 kHz only, the sample rate of AirPlay 1.
-- One receiver at a time.
-- Wi-Fi on 2.4 GHz only, WPA2 with a password or open.
-- The page has no password: whoever is on the network can change the settings, and whoever is near can join the setup network.
-- A volume changed on the receiver is not passed back to the source.
+Run the tests of a crate with `cargo test` in its directory.
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE)

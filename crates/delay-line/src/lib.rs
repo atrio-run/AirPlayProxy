@@ -223,7 +223,9 @@ mod tests {
             let pulled = self.line.pull(&mut out, SILENCE);
             self.now += PULL as u32;
             let played = out
-                .chunks_exact(FRAME)
+                .as_chunks::<FRAME>()
+                .0
+                .iter()
                 .filter(|frame| frame.iter().any(|byte| *byte != SILENCE))
                 .map(|frame| Played {
                     sequence: u32::from_le_bytes(frame[..4].try_into().unwrap()),

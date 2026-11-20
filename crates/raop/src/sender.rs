@@ -547,7 +547,9 @@ impl Sender {
         // The samples travel in network byte order.
         self.packet.extend(
             frames
-                .chunks_exact(2)
+                .as_chunks::<2>()
+                .0
+                .iter()
                 .flat_map(|sample| [sample[1], sample[0]]),
         );
 

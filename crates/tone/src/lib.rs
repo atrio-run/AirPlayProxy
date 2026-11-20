@@ -229,15 +229,15 @@ impl Tone {
             return;
         }
         let lowered = 10f32.powf(-self.room / 20.0);
-        for frame in frames.chunks_exact_mut(4) {
-            for (channel, bytes) in frame.chunks_exact_mut(2).enumerate() {
-                let mut sample = f32::from(i16::from_le_bytes([bytes[0], bytes[1]])) * lowered;
+        for frame in frames.as_chunks_mut::<4>().0 {
+            for (channel, bytes) in frame.as_chunks_mut::<2>().0.iter_mut().enumerate() {
+                let mut sample = f32::from(i16::from_le_bytes(*bytes)) * lowered;
                 for filter in &self.working[..self.count] {
                     sample = self.filters[*filter].pass(channel, sample);
                 }
                 // The conversion clips what overflows; half a step towards the sign rounds it.
                 let rounded = (sample + 0.5f32.copysign(sample)) as i16;
-                bytes.copy_from_slice(&rounded.to_le_bytes());
+                *bytes = rounded.to_le_bytes();
             }
         }
     }
@@ -265,7 +265,9 @@ mod tests {
     fn level(frames: &[u8]) -> f32 {
         let half = &frames[frames.len() / 2..];
         let power: f32 = half
-            .chunks_exact(4)
+            .as_chunks::<4>()
+            .0
+            .iter()
             .map(|frame| f32::from(i16::from_le_bytes([frame[0], frame[1]])).powi(2))
             .sum::<f32>()
             / (half.len() / 4) as f32;
@@ -415,7 +417,8 @@ mod tests {
         control.set(band(5, -12), 1.0);
         let mut frames = tone(1000.0);
         control.process(&mut frames);
-        assert!(frames.chunks_exact(4).all(|frame| frame[2..] == [0, 0]));
+        let (frames, _) = frames.as_chunks::<4>();
+        assert!(frames.iter().all(|frame| frame[2..] == [0, 0]));
     }
 
     #[test]
@@ -431,8 +434,10 @@ mod tests {
             .collect();
         control.process(&mut square);
         let loudest = square
-            .chunks_exact(2)
-            .map(|bytes| i16::from_le_bytes([bytes[0], bytes[1]]).unsigned_abs())
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|bytes| i16::from_le_bytes(*bytes).unsigned_abs())
             .max()
             .unwrap();
         assert!(loudest <= i16::MIN.unsigned_abs());

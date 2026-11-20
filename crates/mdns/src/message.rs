@@ -245,9 +245,8 @@ fn name(message: &[u8], mut at: usize) -> Option<(String, usize)> {
 mod tests {
     use super::*;
 
-    /// The answer of a HomePod mini to the question for its address, as captured over IPv6 on
-    /// 18 November 2026, with another name and other addresses in place of its own: the
-    /// question, its IPv4 address and its two IPv6 addresses.
+    /// What a HomePod mini answers to the question for its address: the question, its IPv4
+    /// address and its two IPv6 addresses.
     const ANSWER: &[u8] = &[
         0x00, 0x00, 0x84, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x02, 0x08, 0x48, 0x6f,
         0x6d, 0x65, 0x50, 0x6f, 0x64, 0x31, 0x05, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x00, 0x00, 0x01,
