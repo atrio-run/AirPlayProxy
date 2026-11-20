@@ -24,7 +24,7 @@ No app, no account, no cloud. Flash the board, pick your Wi-Fi and your speaker 
 
 | | |
 |---|---|
-| Source | Magcubic HY320Pro projector (Android 14) |
+| Sources | Magcubic HY320Pro projector (Android 14), iPhone, iPad and other Bluetooth devices |
 | Speaker | HomePod mini |
 | Board | ESP32-WROVER-E, 16 MB flash, 8 MB PSRAM |
 
